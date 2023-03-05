@@ -1,6 +1,6 @@
 from collections import Counter
 from enum import IntEnum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ class Card(IntEnum):
 
 
 class GameState(BaseModel):
-    hand: List[Card]
+    hand: Counter[Card]
     discarded: Counter[Card]
     # % of my remaining cash I am betting
     bet_percent: Optional[float]
