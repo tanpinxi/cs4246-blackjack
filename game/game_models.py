@@ -1,7 +1,8 @@
 from collections import Counter
 from enum import IntEnum
-from typing import Optional
+from typing import Optional, List
 
+import numpy as np
 from pydantic import BaseModel
 
 
@@ -28,6 +29,21 @@ class GameState(BaseModel):
     bet_percent: Optional[float]
     # total cash I have left
     remaining_cash: int
+
+    @staticmethod
+    def get_state_size() -> int:
+        # number of cards in hand + number of cards discarded + bet percent + remaining cash
+        return len(Card) * 2 + 2
+
+    def flatten(self) -> np.ndarray:
+        output = []
+        for card in Card:
+            output.append(self.hand[card] if card in self.hand else 0)
+        for card in Card:
+            output.append(self.discarded[card] if card in self.discarded else 0)
+        output.append(self.bet_percent or 0)
+        output.append(self.remaining_cash)
+        return np.array(output)
 
 
 class ActionOutcome(BaseModel):
