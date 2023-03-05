@@ -24,11 +24,16 @@ class Card(IntEnum):
 class GameState(BaseModel):
     hand: List[Card]
     discarded: Counter[Card]
+    # % of my remaining cash I am betting
     bet_percent: Optional[float]
+    # total cash I have left
     remaining_cash: int
 
 
 class ActionOutcome(BaseModel):
     new_state: GameState
+    # amount of cash won/loss
+    # should be int but left as float for convenience
     reward: float
+    # single game has ended
     terminated: bool

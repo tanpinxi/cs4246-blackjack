@@ -1,4 +1,6 @@
-from game.game_models import ActionOutcome, GameState
+from collections import Counter
+
+from game.game_models import ActionOutcome, GameState, Card
 
 
 class BlackjackWrapper:
@@ -13,9 +15,12 @@ class BlackjackWrapper:
 
     def reset(self) -> None:
         ...
-
+    
     def get_state(self) -> GameState:
-        ...
+        return GameState(
+            hand=[Card.ace, Card.ace],
+            discarded=Counter([])
+        )
 
     def bet_step(self, bet_percent: float) -> ActionOutcome:
         ...
