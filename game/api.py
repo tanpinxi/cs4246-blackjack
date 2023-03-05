@@ -18,7 +18,7 @@ class BlackjackWrapper:
     
     def get_state(self) -> GameState:
         return GameState(
-            hand=[Card.ace, Card.ace],
+            hand=Counter([Card.ace, Card.ace]),
             discarded=Counter([])
         )
 
