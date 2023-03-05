@@ -1,17 +1,25 @@
 """
-Q-learning (VI) - covered in lec
+deep Q-learning (VI) - covered in lec
+https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
-state + possible action -> NN -> Q value (quality of action in state)
+state -> NN -> Q-value of each possible action (quality of action in state)
 state: current state (normalization)
-possible action: discrete (e.g. 0, 1, 2, 3 is fine, continuous 0 to 3 is not)
-- bet percentage: make it discrete by intervals of 0.1 (10 possible values)
+possible action: must be discrete actions
+- bet percentage: make it discrete by intervals of 0.1, from 0.1 to 1.0 (10 possible values)
 - hit/stand: discrete 0 or 1
+- 12 actions in total -> output of NN is 12 Q-values
 inference: have trained NN
-- test every possible action
-- choose action with highest Q value
+- run NN at each state to get Q-value array
+- choose action with highest Q-value
 training: learn NN
-- explore the game (with eps randomization: eps times you randomly move, 1 - eps you use NN)
-- training loss: MSE between predicted Q value (from NN) and target Q value (calculated)
+- explore the game
+- with eps randomization:
+    - eps times you randomly move
+    - 1 - eps times you use NN and select action with highest Q-value
+    - reduce eps as training progresses
+- training loss:
+    - MSE between predicted Q-value (from NN) and target Q value (calculated)
+    - ONLY apply loss on Q-value of the action that you took
 
 policy gradient (PI) - not covered yet
 
