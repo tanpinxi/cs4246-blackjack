@@ -1,26 +1,11 @@
 from collections import Counter
-from enum import IntEnum
 from typing import Optional, List
 
 import numpy as np
 import torch
 from pydantic import BaseModel
 
-
-class Card(IntEnum):
-    ace = 1
-    two = 2
-    three = 3
-    four = 4
-    five = 5
-    six = 6
-    seven = 7
-    eight = 8
-    nine = 9
-    ten = 10
-    jack = 11
-    queen = 12
-    king = 13
+from constant import Card
 
 
 class GameState(BaseModel):

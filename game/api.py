@@ -1,6 +1,8 @@
 from collections import Counter
+import math
 
-from game.game_models import ActionOutcome, GameState, Card
+from game.models.game_models import ActionOutcome, GameState
+from game.models.constant import Card
 
 
 class BlackjackWrapper:
@@ -20,7 +22,7 @@ class BlackjackWrapper:
         return GameState(
             hand=Counter([Card.ace, Card.ace]),
             discarded=Counter([]),
-            bet_amount=0.5,
+            bet_percent=0.5,
             remaining_cash=100,
         )
 
@@ -29,8 +31,8 @@ class BlackjackWrapper:
             new_state=GameState(
                 hand=Counter([Card.ace, Card.ace]),
                 discarded=Counter([]),
-                bet_amount=bet_percent,
-                remaining_cash=100 * bet_percent,
+                bet_percent=bet_percent,
+                remaining_cash=math.floor(100 * bet_percent),
             ),
             reward=0,
             terminated=False,
@@ -41,7 +43,7 @@ class BlackjackWrapper:
             new_state=GameState(
                 hand=Counter([Card.ace, Card.ace]),
                 discarded=Counter([]),
-                bet_amount=0.5,
+                bet_percent=0.5,
                 remaining_cash=100,
             ),
             reward=1.0,
