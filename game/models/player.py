@@ -1,5 +1,7 @@
-from constant import Card, Action
 from typing import List
+from collections import Counter
+
+from constant import Card, Action
 
 class Player:
     """
@@ -7,7 +9,7 @@ class Player:
     """
 
     def __init__(self):
-        self.hand: List[Card] = []
+        self.hand: Counter[Card] = Counter()
 
     def get_action(self, state = None) -> Action:
         """
@@ -24,15 +26,15 @@ class Player:
 
     def draw(self, deck) -> None:
         card = deck.draw()
-        self.hand.append(card)
+        self.hand[card] += 1
 
-    def reset_hand(self) -> List[Card]:
+    def reset_hand(self) -> Counter[Card]:
         """
         Resets player's hand and return discarded cards
         """
 
         discarded = self.hand
-        self.hand = []
+        self.hand = Counter()
         return discarded
 
     def update(self, new_state, reward):

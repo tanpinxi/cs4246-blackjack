@@ -22,6 +22,10 @@ class GameState(BaseModel):
         return len(Card) * 2 + 2
 
     def flatten(self) -> np.ndarray:
+        """
+        Flattens the response into a 1D numpy array. Used as input for backend ML training.
+        """
+
         output = []
         for card in Card:
             output.append(self.hand[card] if card in self.hand else 0)
