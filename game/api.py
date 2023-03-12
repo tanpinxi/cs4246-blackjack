@@ -1,7 +1,7 @@
 from collections import Counter
 import math
 
-from game.models.game_models import ActionOutcome, GameState
+from game.models.model import ActionOutcome, GameState
 from game.models.constant import Card
 
 
