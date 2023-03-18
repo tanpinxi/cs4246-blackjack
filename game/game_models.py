@@ -3,6 +3,7 @@ from enum import IntEnum
 from typing import Optional, List
 
 import numpy as np
+import torch
 from pydantic import BaseModel
 
 
@@ -44,6 +45,9 @@ class GameState(BaseModel):
         output.append(self.bet_percent or 0)
         output.append(self.remaining_cash)
         return np.array(output)
+
+    def torch_flatten(self, device) -> torch.Tensor:
+        return torch.Tensor(self.flatten()).unsqueeze(0).to(device)
 
 
 class ActionOutcome(BaseModel):
