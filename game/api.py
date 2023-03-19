@@ -60,6 +60,7 @@ class BlackjackWrapper:
             self.deck = Deck(deck_nums=self.deck_nums)
 
         self.deck.shuffle()
+        self.player_bet_percent = 0
         
         # draw 2 cards for each player and dealer, sequence matters
         self.player.draw(self.deck)
@@ -129,11 +130,11 @@ class BlackjackWrapper:
                         game_terminated = True
                         game_reward = 0.5 # even
                         break
-
-                    game_terminated = True
-                    self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
-                    game_reward = 1.0 # player wins
-                    break
+                    else:
+                        game_terminated = True
+                        self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
+                        game_reward = 1.0 # player wins
+                        break
 
             # player maybe win or lose, reward is 0
             # if game_terminated is still False here, means it's dealer's turn
