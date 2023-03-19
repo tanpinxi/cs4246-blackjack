@@ -14,8 +14,9 @@ class BlackjackWrapper:
     Processes input from RL training process and returns output from blackjack game
     """
 
-    def __init__(self, player_cash:int = 100, deck_nums:int = 4):
-        self.player_cash: int = player_cash
+    def __init__(self, initial_cash:int = 100, deck_nums:int = 4):
+        self.initial_cash: int = initial_cash
+        self.remaining_cash: int = initial_cash
         self.player_bet_percent: float = 0
         self.deck_nums: int = deck_nums
 
@@ -52,10 +53,12 @@ class BlackjackWrapper:
         """
 
         return GameState(
+            deck_nums = self.deck_nums,
+            initial_cash = self.initial_cash,
             hand=self.player.hand,
             discarded=self.discarded,
             bet_percent=self.player_bet_percent,
-            remaining_cash=self.player_cash,
+            remaining_cash=self.remaining_cash,
         )
 
     def bet_step(self, bet_percent: float) -> ActionOutcome:
@@ -64,15 +67,16 @@ class BlackjackWrapper:
         """
 
         # TODO: bet logic
-        self.player_cash -= math.floor(self.player_cash * bet_percent)
         self.player_bet_percent = bet_percent
 
         return ActionOutcome(
             new_state=GameState(
+                deck_nums = self.deck_nums,
+                initial_cash = self.initial_cash,
                 hand=self.player.hand,
                 discarded=self.discarded,
-                bet_percent=bet_percent,
-                remaining_cash=self.player_cash,
+                bet_percent=self.player_bet_percent,
+                remaining_cash=self.remaining_cash,
             ),
             reward=0,
             terminated=False,
@@ -89,6 +93,7 @@ class BlackjackWrapper:
                 self.player.draw(self.deck)
                 if self.player.get_hand_value() > 21:
                     game_terminated = True
+                    self.remaining_cash -= math.floor(self.remaining_cash * self.player_bet_percent)
                     game_reward = -1.0 # player lost
                 else:
                     game_reward = 0.5 # player maybe win or lose
@@ -99,15 +104,18 @@ class BlackjackWrapper:
                 self.dealer.draw(self.deck)
                 if self.dealer.get_hand_value() > 21:
                     game_terminated = True
+                    self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
                     game_reward = 1.0 # player wins
             # else, do nothing and reward is 0
 
         return ActionOutcome(
             new_state=GameState(
+                deck_nums = self.deck_nums,
+                initial_cash = self.initial_cash,
                 hand=self.player.hand,
                 discarded=self.discarded,
                 bet_percent=self.player_bet_percent,
-                remaining_cash=self.player_cash,
+                remaining_cash=self.remaining_cash,
             ),
             reward=game_reward,
             terminated=game_terminated, # if Ture, have to call reset()

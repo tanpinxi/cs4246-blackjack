@@ -9,6 +9,8 @@ from constant import Card
 
 
 class GameState(BaseModel):
+    deck_nums: int
+    initial_cash: int
     hand: Counter[Card]
     discarded: Counter[Card]
     bet_percent: Optional[float] # % of my remaining cash I am betting 
@@ -24,17 +26,13 @@ class GameState(BaseModel):
         Flattens the response into a 1D numpy array. Used as input for backend ML training.
         """
 
-        """
-        TODO: normalize this np array
-        """
-
         output = []
         for card in Card:
-            output.append(self.hand[card] if card in self.hand else 0)
+            output.append(self.hand[card] / self.deck_nums if card in self.hand else 0)
         for card in Card:
-            output.append(self.discarded[card] if card in self.discarded else 0)
+            output.append(self.discarded[card] / self.deck_nums if card in self.discarded else 0)
         output.append(self.bet_percent or 0)
-        output.append(self.remaining_cash)
+        output.append(self.remaining_cash / self.initial_cash)
         return np.array(output)
 
     def torch_flatten(self, device) -> torch.Tensor:
