@@ -15,6 +15,10 @@ class BlackjackWrapper:
     """
 
     def __init__(self, initial_cash:int = 100, deck_nums:int = 4):
+        """
+        Initialise the game.
+        Will draw 2 cards for each player and dealer.
+        """
         self.initial_cash: int = initial_cash
         self.remaining_cash: int = initial_cash
         self.player_bet_percent: float = 0
@@ -27,10 +31,17 @@ class BlackjackWrapper:
         self.discarded: Counter[Card] = Counter()
 
         self.deck.shuffle()
+        
+        # draw 2 cards for each player and dealer, sequence matters
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
 
     def reset(self) -> None:
         """
         Next game reshuffles the deck and recollects discarded cards
+        Will draw 2 cards for each player and dealer.
         """
 
         dealer_discarded = self.dealer.reset_hand()
@@ -46,6 +57,12 @@ class BlackjackWrapper:
             self.deck = Deck(deck_nums=self.deck_nums)
 
         self.deck.shuffle()
+        
+        # draw 2 cards for each player and dealer, sequence matters
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
     
     def get_state(self) -> GameState:
         """
