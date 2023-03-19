@@ -38,6 +38,9 @@ class BlackjackWrapper:
         self.player.draw(self.deck)
         self.dealer.draw(self.deck)
 
+        # always starts with player turn
+        self.turn = PlayerType.player
+
     def reset(self) -> None:
         """
         Next game reshuffles the deck and recollects discarded cards
@@ -63,6 +66,9 @@ class BlackjackWrapper:
         self.dealer.draw(self.deck)
         self.player.draw(self.deck)
         self.dealer.draw(self.deck)
+
+        # always starts with player turn
+        self.turn = PlayerType.player
     
     def get_state(self) -> GameState:
         """
@@ -72,6 +78,7 @@ class BlackjackWrapper:
         return GameState(
             deck_nums = self.deck_nums,
             initial_cash = self.initial_cash,
+            turn=self.turn,
             hand=self.player.hand,
             discarded=self.discarded,
             bet_percent=self.player_bet_percent,
@@ -90,6 +97,7 @@ class BlackjackWrapper:
             new_state=GameState(
                 deck_nums = self.deck_nums,
                 initial_cash = self.initial_cash,
+                turn=self.turn,
                 hand=self.player.hand,
                 discarded=self.discarded,
                 bet_percent=self.player_bet_percent,
@@ -127,7 +135,9 @@ class BlackjackWrapper:
                     game_reward = 1.0 # player wins
                     break
 
-                # player maybe win or lose, reward is 0
+            # player maybe win or lose, reward is 0
+            # if game_terminated is still False here, means it's dealer's turn
+            self.turn = PlayerType.dealer
         
         if player_type == PlayerType.dealer:
             # keeps hitting until dealer hand value is higher than or equals to player hand value
@@ -154,6 +164,7 @@ class BlackjackWrapper:
             new_state=GameState(
                 deck_nums = self.deck_nums,
                 initial_cash = self.initial_cash,
+                turn=self.turn,
                 hand=self.player.hand,
                 discarded=self.discarded,
                 bet_percent=self.player_bet_percent,

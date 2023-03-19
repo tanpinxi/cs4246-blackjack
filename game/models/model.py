@@ -5,12 +5,13 @@ import numpy as np
 import torch
 from pydantic import BaseModel
 
-from constant import Card
+from constant import Card, PlayerType
 
 
 class GameState(BaseModel):
     deck_nums: int
     initial_cash: int
+    turn: PlayerType
     hand: Counter[Card]
     discarded: Counter[Card]
     bet_percent: Optional[float] # % of my remaining cash I am betting 
