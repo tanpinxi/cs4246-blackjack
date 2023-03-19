@@ -89,24 +89,49 @@ class BlackjackWrapper:
         game_reward: float = 0
 
         if player_type == PlayerType.player:
-            if self.player.get_action() == Action.hit:
+            # keeps hitting until it's enough (hand_value > 15)
+            while self.player.get_action() == Action.hit:
                 self.player.draw(self.deck)
                 if self.player.get_hand_value() > 21:
                     game_terminated = True
                     self.remaining_cash -= math.floor(self.remaining_cash * self.player_bet_percent)
                     game_reward = -1.0 # player lost
-                else:
-                    game_reward = 0.5 # player maybe win or lose
-            # else, do nothing and reward is 0 
+                    break   
+                
+                if self.player.get_hand_value() == 21:
+                    if self.dealer.get_hand_value() == 21:
+                        # dealer also blackjack, game even
+                        game_terminated = True
+                        game_reward = 0.5 # even
+                        break
+
+                    game_terminated = True
+                    self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
+                    game_reward = 1.0 # player wins
+                    break
+
+                # player maybe win or lose, reward is 0
         
         if player_type == PlayerType.dealer:
-            if self.dealer.get_action() == Action.hit:
+            # keeps hitting until dealer hand value is higher than or equals to player hand value
+            while self.dealer.get_action() == Action.hit or self.dealer.get_hand_value() < self.player.get_hand_value():
                 self.dealer.draw(self.deck)
                 if self.dealer.get_hand_value() > 21:
                     game_terminated = True
                     self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
                     game_reward = 1.0 # player wins
-            # else, do nothing and reward is 0
+                    break
+                
+                if self.dealer.get_hand_value() == self.player.get_hand_value():
+                    game_terminated = True
+                    game_reward = 0.5 # even
+                    break
+
+                if self.dealer.get_hand_value() > self.player.get_hand_value():
+                    game_terminated = True
+                    self.remaining_cash -= math.floor(self.remaining_cash * self.player_bet_percent)
+                    game_reward = -1.0 # player lost
+                    break
 
         return ActionOutcome(
             new_state=GameState(
