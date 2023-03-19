@@ -20,5 +20,9 @@ class Card(IntEnum):
     king = 13
 
 class Action(IntEnum):
-    draw = 1
+    hit = 1
     stay = 2
+
+class PlayerType(IntEnum):
+    player = 1
+    dealer = 2

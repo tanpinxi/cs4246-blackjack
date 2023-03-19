@@ -22,3 +22,6 @@ class Deck:
 
     def draw(self):
         return self.cards.pop()
+    
+    def get_remaining_cards(self) -> int:
+        return len(self.cards)

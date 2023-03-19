@@ -11,10 +11,8 @@ from constant import Card
 class GameState(BaseModel):
     hand: Counter[Card]
     discarded: Counter[Card]
-    # % of my remaining cash I am betting
-    bet_percent: Optional[float]
-    # total cash I have left
-    remaining_cash: int
+    bet_percent: Optional[float] # % of my remaining cash I am betting 
+    remaining_cash: int # total cash I have left
 
     @staticmethod
     def get_state_size() -> int:
@@ -24,6 +22,10 @@ class GameState(BaseModel):
     def flatten(self) -> np.ndarray:
         """
         Flattens the response into a 1D numpy array. Used as input for backend ML training.
+        """
+
+        """
+        TODO: normalize this np array
         """
 
         output = []
