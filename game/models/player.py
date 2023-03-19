@@ -24,7 +24,19 @@ class Player:
             return Action.stay
 
     def get_hand_value(self) -> int:
-        return sum(self.hand)
+        hand_value = 0
+        total_cards = sum(self.hand.values())
+        for card, count in self.hand.items():
+            if card in [Card.jack, Card.queen, Card.king]:
+                hand_value += 10 * count
+            else:
+                hand_value += card * count
+        
+        # blackjack case
+        if hand_value == 11 and total_cards == 2 and self.hand[Card.ace] == 1:
+            hand_value = 21
+        
+        return hand_value
 
     def get_showing_value(self) -> int:
         """
@@ -32,7 +44,7 @@ class Player:
         """
         if not self.first_card:
             return 0
-        return sum(self.hand) - self.first_card
+        return self.get_hand_value() - self.first_card
 
     def draw(self, deck) -> None:
         card = deck.draw()
