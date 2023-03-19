@@ -4,7 +4,7 @@ import math
 from game.models.model import ActionOutcome, GameState
 from game.models.player import Player
 from game.models.deck import Deck
-from game.models.constant import Card, PlayerType
+from game.models.constant import Card, PlayerType, Action
 
 
 class BlackjackWrapper:
@@ -14,9 +14,10 @@ class BlackjackWrapper:
     Processes input from RL training process and returns output from blackjack game
     """
 
-    def __init__(self, player_cash=100, deck_nums=4):
-        self.player_cash = player_cash
-        self.deck_nums = deck_nums
+    def __init__(self, player_cash:int = 100, deck_nums:int = 4):
+        self.player_cash: int = player_cash
+        self.player_bet_percent: float = 0
+        self.deck_nums: int = deck_nums
 
         self.dealer = Player(player_type=PlayerType.dealer)
         self.player = Player(player_type=PlayerType.player)
@@ -53,16 +54,18 @@ class BlackjackWrapper:
         return GameState(
             hand=self.player.hand,
             discarded=self.discarded,
-            bet_percent=0.5,
+            bet_percent=self.player_bet_percent,
             remaining_cash=self.player_cash,
         )
 
     def bet_step(self, bet_percent: float) -> ActionOutcome:
+        """
+        Must call this first at the start of each round
+        """
 
         # TODO: bet logic
         self.player_cash -= math.floor(self.player_cash * bet_percent)
-
-        # Question: how do we get bet_percent?
+        self.player_bet_percent = bet_percent
 
         return ActionOutcome(
             new_state=GameState(
@@ -75,30 +78,37 @@ class BlackjackWrapper:
             terminated=False,
         )
 
-    def card_step(self, player_type: PlayerType, take_card: bool) -> ActionOutcome:
+    def card_step(self, player_type: PlayerType) -> ActionOutcome:
 
         # TODO: draw logic
-        game_terminated = False
+        game_terminated: bool = False
+        game_reward: float = 0
 
         if player_type == PlayerType.player:
-            if take_card:
+            if self.player.get_action() == Action.hit:
                 self.player.draw(self.deck)
                 if self.player.get_hand_value() > 21:
                     game_terminated = True
+                    game_reward = -1.0 # player lost
+                else:
+                    game_reward = 0.5 # player maybe win or lose
+            # else, do nothing and reward is 0 
         
         if player_type == PlayerType.dealer:
-            if take_card:
+            if self.dealer.get_action() == Action.hit:
                 self.dealer.draw(self.deck)
                 if self.dealer.get_hand_value() > 21:
                     game_terminated = True
+                    game_reward = 1.0 # player wins
+            # else, do nothing and reward is 0
 
         return ActionOutcome(
             new_state=GameState(
                 hand=self.player.hand,
                 discarded=self.discarded,
-                bet_percent=0.5, # how do get this?
+                bet_percent=self.player_bet_percent,
                 remaining_cash=self.player_cash,
             ),
-            reward=1.0,
-            terminated=game_terminated,
+            reward=game_reward,
+            terminated=game_terminated, # if Ture, have to call reset()
         )
