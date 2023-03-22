@@ -26,7 +26,6 @@ class GameState(BaseModel):
         """
         Flattens the response into a 1D numpy array. Used as input for backend ML training.
         """
-
         output = []
         for card in Card:
             output.append(self.hand[card] / self.deck_nums if card in self.hand else 0)
