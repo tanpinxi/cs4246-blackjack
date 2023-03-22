@@ -20,6 +20,7 @@ class BlackjackWrapper:
         Will draw 2 cards for each player and dealer.
         """
         self.initial_cash: int = initial_cash
+        self.max_attained_cash: int = initial_cash
         self.remaining_cash: int = initial_cash
         self.player_bet_percent: float = 0
         self.deck_nums: int = deck_nums
@@ -41,7 +42,9 @@ class BlackjackWrapper:
         """
         if self.remaining_cash <= 0:
             # ran out of cash, restart entire game
-            return BlackjackWrapper(initial_cash=self.initial_cash, deck_nums=self.deck_nums)
+            return BlackjackWrapper(
+                initial_cash=self.initial_cash, deck_nums=self.deck_nums
+            )
 
         dealer_discarded = self.dealer.reset_hand()
         player_discarded = self.player.reset_hand()
@@ -112,7 +115,9 @@ class BlackjackWrapper:
                 game_terminated = True
                 loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
                 self.remaining_cash -= loss_cash
-                game_reward = -loss_cash if self.remaining_cash > 0 else -(self.initial_cash ** 2)
+                game_reward = (
+                    -loss_cash if self.remaining_cash > 0 else -self.max_attained_cash
+                )
             else:
                 # not bust, continue
                 game_terminated = False
@@ -126,6 +131,9 @@ class BlackjackWrapper:
                     # dealer bust, player wins
                     win_cash = int(self.remaining_cash * self.player_bet_percent)
                     self.remaining_cash += win_cash
+                    self.max_attained_cash = max(
+                        self.max_attained_cash, self.remaining_cash
+                    )
                     game_reward = win_cash
                     break
                 elif dealer_score > player_score:
@@ -134,7 +142,11 @@ class BlackjackWrapper:
                         int(self.remaining_cash * self.player_bet_percent), 1
                     )
                     self.remaining_cash -= loss_cash
-                    game_reward = -loss_cash if self.remaining_cash > 0 else -(self.initial_cash ** 2)
+                    game_reward = (
+                        -loss_cash
+                        if self.remaining_cash > 0
+                        else -self.max_attained_cash
+                    )
                     break
                 self.dealer.draw(self.deck)
 
