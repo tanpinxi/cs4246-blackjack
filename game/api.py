@@ -32,12 +32,6 @@ class BlackjackWrapper:
 
         self.deck.shuffle()
 
-        # draw 2 cards for each player and dealer, sequence matters
-        self.player.draw(self.deck)
-        self.dealer.draw(self.deck)
-        self.player.draw(self.deck)
-        self.dealer.draw(self.deck)
-
         # always starts with player turn
         self.turn = PlayerType.player
 
@@ -61,12 +55,6 @@ class BlackjackWrapper:
         self.deck.shuffle()
         self.player_bet_percent = 0
 
-        # draw 2 cards for each player and dealer, sequence matters
-        self.player.draw(self.deck)
-        self.dealer.draw(self.deck)
-        self.player.draw(self.deck)
-        self.dealer.draw(self.deck)
-
         # always starts with player turn
         self.turn = PlayerType.player
 
@@ -89,6 +77,12 @@ class BlackjackWrapper:
         Must call this first at the start of each round
         """
         self.player_bet_percent = bet_percent
+
+        # draw 2 cards for each player and dealer, sequence matters
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
+        self.player.draw(self.deck)
+        self.dealer.draw(self.deck)
 
         return ActionOutcome(
             new_state=GameState(

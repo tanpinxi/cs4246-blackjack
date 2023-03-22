@@ -1,19 +1,20 @@
 from typing import List, Union
 from collections import Counter
 
-from constant import Card, Action, PlayerType
+from game.models.constant import Card, Action, PlayerType
+
 
 class Player:
     """
     Encapsulates a player's action
     """
 
-    def __init__(self, player_type:PlayerType):
+    def __init__(self, player_type: PlayerType):
         self.player_type = player_type
         self.first_card: Union[None, Card] = None
         self.hand: Counter[Card] = Counter()
 
-    def get_action(self, state = None) -> Action:
+    def get_action(self, state=None) -> Action:
         """
         Obtain player's next action, should perform Q-Learning on this
         """
@@ -31,11 +32,11 @@ class Player:
                 hand_value += 10 * count
             else:
                 hand_value += card * count
-        
+
         # blackjack case
         if hand_value == 11 and total_cards == 2 and self.hand[Card.ace] == 1:
             hand_value = 21
-        
+
         return hand_value
 
     def get_showing_value(self) -> int:
@@ -64,4 +65,3 @@ class Player:
 
     def update(self, new_state, reward):
         ...
-

@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from pydantic import BaseModel
 
-from constant import Card, PlayerType
+from game.models.constant import Card, PlayerType
 
 
 class GameState(BaseModel):
@@ -14,8 +14,8 @@ class GameState(BaseModel):
     turn: PlayerType
     hand: Counter[Card]
     discarded: Counter[Card]
-    bet_percent: Optional[float] # % of my remaining cash I am betting 
-    remaining_cash: int # total cash I have left
+    bet_percent: Optional[float]  # % of my remaining cash I am betting
+    remaining_cash: int  # total cash I have left
 
     @staticmethod
     def get_state_size() -> int:
@@ -31,7 +31,9 @@ class GameState(BaseModel):
         for card in Card:
             output.append(self.hand[card] / self.deck_nums if card in self.hand else 0)
         for card in Card:
-            output.append(self.discarded[card] / self.deck_nums if card in self.discarded else 0)
+            output.append(
+                self.discarded[card] / self.deck_nums if card in self.discarded else 0
+            )
         output.append(self.bet_percent or 0)
         output.append(self.remaining_cash / self.initial_cash)
         return np.array(output)
