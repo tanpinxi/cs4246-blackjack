@@ -1,35 +1,21 @@
 from collections import Counter
-from enum import IntEnum
 from typing import Optional, List
 
 import numpy as np
 import torch
 from pydantic import BaseModel
 
-
-class Card(IntEnum):
-    ace = 1
-    two = 2
-    three = 3
-    four = 4
-    five = 5
-    six = 6
-    seven = 7
-    eight = 8
-    nine = 9
-    ten = 10
-    jack = 11
-    queen = 12
-    king = 13
+from game.models.constant import Card, PlayerType
 
 
 class GameState(BaseModel):
+    deck_nums: int
+    initial_cash: int
+    turn: PlayerType
     hand: Counter[Card]
     discarded: Counter[Card]
-    # % of my remaining cash I am betting
-    bet_percent: Optional[float]
-    # total cash I have left
-    remaining_cash: int
+    bet_percent: Optional[float]  # % of my remaining cash I am betting
+    remaining_cash: int  # total cash I have left
 
     @staticmethod
     def get_state_size() -> int:
@@ -37,13 +23,18 @@ class GameState(BaseModel):
         return len(Card) * 2 + 2
 
     def flatten(self) -> np.ndarray:
+        """
+        Flattens the response into a 1D numpy array. Used as input for backend ML training.
+        """
         output = []
         for card in Card:
-            output.append(self.hand[card] if card in self.hand else 0)
+            output.append(self.hand[card] / self.deck_nums if card in self.hand else 0)
         for card in Card:
-            output.append(self.discarded[card] if card in self.discarded else 0)
+            output.append(
+                self.discarded[card] / self.deck_nums if card in self.discarded else 0
+            )
         output.append(self.bet_percent or 0)
-        output.append(self.remaining_cash)
+        output.append(self.remaining_cash / self.initial_cash)
         return np.array(output)
 
     def torch_flatten(self, device) -> torch.Tensor:
