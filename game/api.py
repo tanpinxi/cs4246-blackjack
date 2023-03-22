@@ -90,8 +90,6 @@ class BlackjackWrapper:
         """
         Must call this first at the start of each round
         """
-
-        # TODO: bet logic
         self.player_bet_percent = bet_percent
 
         return ActionOutcome(
@@ -108,63 +106,44 @@ class BlackjackWrapper:
             terminated=False,
         )
 
-    def card_step(self, player_type: PlayerType) -> ActionOutcome:
-
-        # TODO: draw logic
-        game_terminated: bool = False
-        game_reward: float = 0
-
-        if player_type == PlayerType.player:
-            # keeps hitting until it's enough (hand_value > 15)
-            while self.player.get_action() == Action.hit:
-                self.player.draw(self.deck)
-                if self.player.get_hand_value() > 21:
-                    game_terminated = True
-                    self.remaining_cash -= math.floor(self.remaining_cash * self.player_bet_percent)
-                    game_reward = -1.0 # player lost
-                    break   
-                
-                if self.player.get_hand_value() == 21:
-                    if self.dealer.get_hand_value() == 21:
-                        # dealer also blackjack, game even
-                        game_terminated = True
-                        game_reward = 0.5 # even
-                        break
-                    else:
-                        game_terminated = True
-                        self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
-                        game_reward = 1.0 # player wins
-                        break
-
-            # player maybe win or lose, reward is 0
-            # if game_terminated is still False here, means it's dealer's turn
-            self.turn = PlayerType.dealer
-        
-        if player_type == PlayerType.dealer:
-            # keeps hitting until dealer hand value is higher than or equals to player hand value
-            while self.dealer.get_action() == Action.hit or self.dealer.get_hand_value() < self.player.get_hand_value():
+    def card_step(self, take_card: bool) -> ActionOutcome:
+        game_terminated = False
+        game_reward = 0
+        if take_card:
+            self.player.draw(self.deck)
+            if self.player.get_hand_value() > 21:
+                # bust, immediately loss
+                game_terminated = True
+                loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
+                self.remaining_cash -= loss_cash
+                game_reward = -loss_cash
+            else:
+                # not bust, continue
+                game_terminated = False
+        else:
+            # stand, end turn
+            game_terminated = True
+            player_score = self.player.get_hand_value()
+            while True:
+                dealer_score = self.dealer.get_hand_value()
+                if dealer_score > 21:
+                    # dealer bust, player wins
+                    win_cash = int(self.remaining_cash * self.player_bet_percent)
+                    self.remaining_cash += win_cash
+                    game_reward = win_cash
+                    break
+                elif dealer_score > player_score:
+                    # dealer score is higher than player, player loses
+                    loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
+                    self.remaining_cash -= loss_cash
+                    game_reward = -loss_cash
+                    break
                 self.dealer.draw(self.deck)
-                if self.dealer.get_hand_value() > 21:
-                    game_terminated = True
-                    self.remaining_cash += math.floor(self.remaining_cash * self.player_bet_percent)
-                    game_reward = 1.0 # player wins
-                    break
-                
-                if self.dealer.get_hand_value() == self.player.get_hand_value():
-                    game_terminated = True
-                    game_reward = 0.5 # even
-                    break
-
-                if self.dealer.get_hand_value() > self.player.get_hand_value():
-                    game_terminated = True
-                    self.remaining_cash -= math.floor(self.remaining_cash * self.player_bet_percent)
-                    game_reward = -1.0 # player lost
-                    break
 
         return ActionOutcome(
             new_state=GameState(
-                deck_nums = self.deck_nums,
-                initial_cash = self.initial_cash,
+                deck_nums=self.deck_nums,
+                initial_cash=self.initial_cash,
                 turn=self.turn,
                 hand=self.player.hand,
                 discarded=self.discarded,
@@ -172,5 +151,5 @@ class BlackjackWrapper:
                 remaining_cash=self.remaining_cash,
             ),
             reward=game_reward,
-            terminated=game_terminated, # if Ture, have to call reset()
+            terminated=game_terminated,
         )
