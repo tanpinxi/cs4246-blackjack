@@ -14,13 +14,13 @@ class BlackjackWrapper:
     Processes input from RL training process and returns output from blackjack game
     """
 
-    def __init__(self, initial_cash: int = 100, deck_nums: int = 4):
+    def __init__(self, initial_cash: int = 100, deck_nums: int = 4, min_bet: int = 10):
         """
         Initialise the game.
         Will draw 2 cards for each player and dealer.
         """
         self.initial_cash: int = initial_cash
-        self.max_attained_cash: int = initial_cash
+        self.min_bet: int = min_bet
         self.remaining_cash: int = initial_cash
         self.player_bet_percent: float = 0
         self.deck_nums: int = deck_nums
@@ -93,7 +93,7 @@ class BlackjackWrapper:
         self.player.draw(self.deck)
         self.dealer.draw(self.deck)
 
-        # Implement natural blackjack rules for the dealer 
+        # Implement natural blackjack rules for the dealer
         # Case 1 - Both have natural blackjack
         if self.player.get_hand_value() == 21 and self.dealer.get_hand_value() == 21:
             # push, no cash change
@@ -103,11 +103,10 @@ class BlackjackWrapper:
         elif self.dealer.get_hand_value() == 21:
             # loss, immediately lose
             game_terminated = True
-            loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
-            self.remaining_cash -= loss_cash
-            game_reward = (
-                -loss_cash if self.remaining_cash > 0 else -self.max_attained_cash
+            loss_cash = max(
+                int(self.remaining_cash * self.player_bet_percent), self.min_bet
             )
+            self.remaining_cash -= loss_cash
 
         return ActionOutcome(
             new_state=GameState(
@@ -119,23 +118,22 @@ class BlackjackWrapper:
                 bet_percent=self.player_bet_percent,
                 remaining_cash=self.remaining_cash,
             ),
-            reward=game_reward,
+            reward=0,
             terminated=game_terminated,
         )
 
     def card_step(self, take_card: bool) -> ActionOutcome:
         game_terminated = False
-        game_reward = 0
+        bet_amount = max(
+            int(self.remaining_cash * self.player_bet_percent), self.min_bet
+        )
         if take_card:
             self.player.draw(self.deck)
             if self.player.get_hand_value() > 21:
                 # bust, immediately lose
                 game_terminated = True
-                loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
+                loss_cash = bet_amount
                 self.remaining_cash -= loss_cash
-                game_reward = (
-                    -loss_cash if self.remaining_cash > 0 else -self.max_attained_cash
-                )
             else:
                 # not bust, continue
                 game_terminated = False
@@ -146,13 +144,8 @@ class BlackjackWrapper:
 
             # Player has natural blackjack, outcome is immediate and wins 2 times the bet
             if player_score == 21 and len(self.player.hand) == 2:
-                win_cash = int(self.remaining_cash * self.player_bet_percent * 2)
+                win_cash = bet_amount * 2
                 self.remaining_cash += win_cash
-                self.max_attained_cash = max(
-                    self.max_attained_cash, self.remaining_cash
-                )
-                game_reward = win_cash
-
             else:
                 # Draw card until score is greater than or equal to 17 for dealer (house rules)
                 while self.dealer.get_hand_value() < 17:
@@ -162,35 +155,28 @@ class BlackjackWrapper:
                 dealer_score = self.dealer.get_hand_value()
                 if dealer_score > 21:
                     # dealer bust, player wins
-                    win_cash = int(self.remaining_cash * self.player_bet_percent)
+                    win_cash = bet_amount
                     self.remaining_cash += win_cash
-                    self.max_attained_cash = max(
-                        self.max_attained_cash, self.remaining_cash
-                    )
-                    game_reward = win_cash
                 elif dealer_score > player_score:
                     # dealer score is higher than player, player loses
-                    loss_cash = max(
-                        int(self.remaining_cash * self.player_bet_percent), 1
-                    )
+                    loss_cash = bet_amount
                     self.remaining_cash -= loss_cash
-                    game_reward = (
-                        -loss_cash
-                        if self.remaining_cash > 0
-                        else -self.max_attained_cash
-                    )
                 elif dealer_score == player_score:
-                    # push, no cash change
-                    game_reward = 0
+                    # no difference in score, zero change
+                    ...
                 else:
                     # player score is higher than dealer, player wins
-                    win_cash = int(self.remaining_cash * self.player_bet_percent)
+                    win_cash = bet_amount
                     self.remaining_cash += win_cash
-                    self.max_attained_cash = max(
-                        self.max_attained_cash, self.remaining_cash
-                    )
-                    game_reward = win_cash
-
+        reward = (
+            (
+                self.remaining_cash / self.initial_cash
+                if self.remaining_cash > 0
+                else -1.0
+            )
+            if game_terminated
+            else 0
+        )
         return ActionOutcome(
             new_state=GameState(
                 deck_nums=self.deck_nums,
@@ -201,6 +187,6 @@ class BlackjackWrapper:
                 bet_percent=self.player_bet_percent,
                 remaining_cash=self.remaining_cash,
             ),
-            reward=game_reward,
+            reward=reward,
             terminated=game_terminated,
         )
