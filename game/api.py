@@ -103,7 +103,7 @@ class BlackjackWrapper:
         elif self.dealer.get_hand_value() == 21:
             # loss, immediately lose
             game_terminated = True
-            loss_cash = max(int(self.remaining_cash * self.player_bet_percent * 2), 1)
+            loss_cash = max(int(self.remaining_cash * self.player_bet_percent), 1)
             self.remaining_cash -= loss_cash
             game_reward = (
                 -loss_cash if self.remaining_cash > 0 else -self.max_attained_cash
