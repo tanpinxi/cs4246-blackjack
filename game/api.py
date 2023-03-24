@@ -17,7 +17,6 @@ class BlackjackWrapper:
     def __init__(self, initial_cash: int = 100, deck_nums: int = 4, min_bet: int = 10):
         """
         Initialise the game.
-        Will draw 2 cards for each player and dealer.
         """
         self.initial_cash: int = initial_cash
         self.min_bet: int = min_bet
@@ -97,7 +96,6 @@ class BlackjackWrapper:
         # Case 1 - Both have natural blackjack
         if self.player.get_hand_value() == 21 and self.dealer.get_hand_value() == 21:
             # push, no cash change
-            game_reward = 0
             game_terminated = True
         # Case 2 - Dealer has natural blackjack, loss is immediate and loses 2 times the bet
         elif self.dealer.get_hand_value() == 21:
@@ -118,7 +116,7 @@ class BlackjackWrapper:
                 bet_percent=self.player_bet_percent,
                 remaining_cash=self.remaining_cash,
             ),
-            reward=0,
+            reward=game_reward,
             terminated=game_terminated,
         )
 

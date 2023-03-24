@@ -11,15 +11,10 @@ class Player:
 
     def __init__(self, player_type: PlayerType):
         self.player_type = player_type
-        self.first_card: Union[None, Card] = None
         self.hand: Counter[Card] = Counter()
 
-    def get_action(self, state=None) -> Action:
-        """
-        Obtain player's next action, should perform Q-Learning on this
-        """
-
-        if self.get_hand_value() < 15:
+    def get_action(self) -> Action:
+        if self.get_hand_value() < 17:
             return Action.hit
         else:
             return Action.stay
@@ -35,7 +30,7 @@ class Player:
             elif total_cards == 2 and hand[Card.ace] == 1 and (hand[Card.jack] == 1 or
                                                                hand[Card.queen] == 1 or
                                                                hand[Card.king] == 1 or
-                                                               hand[10] == 1):
+                                                               hand[Card.ten] == 1):
                 return 21
             # Third case is where there are an arbitrary number of aces and arbitrary number of other cards
             # In this case, there are 2 possibilities: The aces are either 1 or 11
@@ -64,20 +59,9 @@ class Player:
         else:
             return get_value_with_aces(self.hand)
 
-    def get_showing_value(self) -> int:
-        """
-        Get player's showing value, only applies for dealer
-        """
-        if not self.first_card:
-            return 0
-        return self.get_hand_value() - self.first_card
-
     def draw(self, deck) -> None:
         card = deck.draw()
         self.hand[card] += 1
-
-        if not self.first_card:
-            self.first_card = card
 
     def reset_hand(self) -> Counter[Card]:
         """
@@ -87,6 +71,3 @@ class Player:
         discarded = self.hand
         self.hand = Counter()
         return discarded
-
-    def update(self, new_state, reward):
-        ...
