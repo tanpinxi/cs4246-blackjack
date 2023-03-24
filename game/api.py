@@ -40,7 +40,7 @@ class BlackjackWrapper:
         """
         Next game reshuffles the deck and recollects discarded cards
         """
-        if self.remaining_cash <= 0:
+        if self.remaining_cash < self.min_bet:
             # ran out of cash, restart entire game
             return BlackjackWrapper(
                 initial_cash=self.initial_cash, deck_nums=self.deck_nums
@@ -171,7 +171,7 @@ class BlackjackWrapper:
         reward = (
             (
                 self.remaining_cash / self.initial_cash
-                if self.remaining_cash > 0
+                if self.remaining_cash >= self.min_bet
                 else -1.0
             )
             if game_terminated
