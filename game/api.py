@@ -20,6 +20,7 @@ class BlackjackWrapper:
         Will draw 2 cards for each player and dealer.
         """
         self.initial_cash: int = initial_cash
+        self.max_attained_cash: int = initial_cash
         self.min_bet: int = min_bet
         self.remaining_cash: int = initial_cash
         self.player_bet_percent: float = 0
@@ -97,9 +98,8 @@ class BlackjackWrapper:
         # Case 1 - Both have natural blackjack
         if self.player.get_hand_value() == 21 and self.dealer.get_hand_value() == 21:
             # push, no cash change
-            game_reward = 0
             game_terminated = True
-        # Case 2 - Dealer has natural blackjack, loss is immediate and loses 2 times the bet
+        # Case 2 - Dealer has natural blackjack, loss is immediately
         elif self.dealer.get_hand_value() == 21:
             # loss, immediately lose
             game_terminated = True
@@ -107,6 +107,24 @@ class BlackjackWrapper:
                 int(self.remaining_cash * self.player_bet_percent), self.min_bet
             )
             self.remaining_cash -= loss_cash
+            reward = (
+                self.remaining_cash
+                if self.remaining_cash >= self.min_bet
+                else -self.max_attained_cash
+            ) / self.initial_cash
+            return ActionOutcome(
+                new_state=GameState(
+                    deck_nums=self.deck_nums,
+                    initial_cash=self.initial_cash,
+                    turn=self.turn,
+                    hand=self.player.hand,
+                    discarded=self.discarded,
+                    bet_percent=self.player_bet_percent,
+                    remaining_cash=self.remaining_cash,
+                ),
+                reward=reward,
+                terminated=game_terminated,
+            )
 
         return ActionOutcome(
             new_state=GameState(
@@ -173,11 +191,15 @@ class BlackjackWrapper:
                         # player score is higher than dealer, player wins
                         win_cash = bet_amount
                         self.remaining_cash += win_cash
+        self.max_attained_cash = max(self.max_attained_cash, self.remaining_cash)
         reward = reward or (
             (
-                self.remaining_cash / self.initial_cash
-                if self.remaining_cash >= self.min_bet
-                else -1.0
+                (
+                    self.remaining_cash
+                    if self.remaining_cash >= self.min_bet
+                    else -self.max_attained_cash
+                )
+                / self.initial_cash
             )
             if game_terminated
             else 0
