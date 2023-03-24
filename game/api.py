@@ -124,9 +124,11 @@ class BlackjackWrapper:
 
     def card_step(self, take_card: bool) -> ActionOutcome:
         game_terminated = False
+        reward = None
         bet_amount = max(
             int(self.remaining_cash * self.player_bet_percent), self.min_bet
         )
+
         if take_card:
             self.player.draw(self.deck)
             if self.player.get_hand_value() > 21:
@@ -140,11 +142,9 @@ class BlackjackWrapper:
         else:
             # stand, players turn ends
             player_score = self.player.get_hand_value()
-            
-            # Ignoring the case where player score < 16 because we want the player to stop standing at below 16
+            # Penalize invalid action when the player tries to stand with score < 16
             if player_score < 16:
-                reward = -1
-
+                reward = -1.0
             else:
                 game_terminated = True
                 # Player has natural blackjack, outcome is immediate and wins 2 times the bet
@@ -173,15 +173,15 @@ class BlackjackWrapper:
                         # player score is higher than dealer, player wins
                         win_cash = bet_amount
                         self.remaining_cash += win_cash
-                reward = (
-                    (
-                        self.remaining_cash / self.initial_cash
-                        if self.remaining_cash >= self.min_bet
-                        else -1.0
-                    )
-                    if game_terminated
-                    else 0
-                )
+        reward = reward or (
+            (
+                self.remaining_cash / self.initial_cash
+                if self.remaining_cash >= self.min_bet
+                else -1.0
+            )
+            if game_terminated
+            else 0
+        )
         return ActionOutcome(
             new_state=GameState(
                 deck_nums=self.deck_nums,
