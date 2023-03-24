@@ -139,44 +139,49 @@ class BlackjackWrapper:
                 game_terminated = False
         else:
             # stand, players turn ends
-            game_terminated = True
             player_score = self.player.get_hand_value()
+            
+            # Ignoring the case where player score < 16 because we want the player to stop standing at below 16
+            if player_score < 16:
+                reward = -1
 
-            # Player has natural blackjack, outcome is immediate and wins 2 times the bet
-            if player_score == 21 and len(self.player.hand) == 2:
-                win_cash = bet_amount * 2
-                self.remaining_cash += win_cash
             else:
-                # Draw card until score is greater than or equal to 17 for dealer (house rules)
-                while self.dealer.get_hand_value() < 17:
-                    self.dealer.draw(self.deck)
-
-                # Check if dealer busts or has a score greater than player here and update game_reward accordingly
-                dealer_score = self.dealer.get_hand_value()
-                if dealer_score > 21:
-                    # dealer bust, player wins
-                    win_cash = bet_amount
+                game_terminated = True
+                # Player has natural blackjack, outcome is immediate and wins 2 times the bet
+                if player_score == 21 and len(self.player.hand) == 2:
+                    win_cash = bet_amount * 2
                     self.remaining_cash += win_cash
-                elif dealer_score > player_score:
-                    # dealer score is higher than player, player loses
-                    loss_cash = bet_amount
-                    self.remaining_cash -= loss_cash
-                elif dealer_score == player_score:
-                    # no difference in score, zero change
-                    ...
                 else:
-                    # player score is higher than dealer, player wins
-                    win_cash = bet_amount
-                    self.remaining_cash += win_cash
-        reward = (
-            (
-                self.remaining_cash / self.initial_cash
-                if self.remaining_cash >= self.min_bet
-                else -1.0
-            )
-            if game_terminated
-            else 0
-        )
+                    # Draw card until score is greater than or equal to 17 for dealer (house rules)
+                    while self.dealer.get_hand_value() < 17:
+                        self.dealer.draw(self.deck)
+
+                    # Check if dealer busts or has a score greater than player here and update game_reward accordingly
+                    dealer_score = self.dealer.get_hand_value()
+                    if dealer_score > 21:
+                        # dealer bust, player wins
+                        win_cash = bet_amount
+                        self.remaining_cash += win_cash
+                    elif dealer_score > player_score:
+                        # dealer score is higher than player, player loses
+                        loss_cash = bet_amount
+                        self.remaining_cash -= loss_cash
+                    elif dealer_score == player_score:
+                        # no difference in score, zero change
+                        ...
+                    else:
+                        # player score is higher than dealer, player wins
+                        win_cash = bet_amount
+                        self.remaining_cash += win_cash
+                reward = (
+                    (
+                        self.remaining_cash / self.initial_cash
+                        if self.remaining_cash >= self.min_bet
+                        else -1.0
+                    )
+                    if game_terminated
+                    else 0
+                )
         return ActionOutcome(
             new_state=GameState(
                 deck_nums=self.deck_nums,
