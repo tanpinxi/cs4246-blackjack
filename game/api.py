@@ -83,7 +83,7 @@ class BlackjackWrapper:
         """
         Must call this first at the start of each round
         """
-        game_reward = 0
+        reward = 0
         game_terminated = False
         self.player_bet_percent = bet_percent
 
@@ -111,19 +111,6 @@ class BlackjackWrapper:
                 if self.remaining_cash >= self.min_bet
                 else -self.max_attained_cash
             ) / self.initial_cash
-            return ActionOutcome(
-                new_state=GameState(
-                    deck_nums=self.deck_nums,
-                    initial_cash=self.initial_cash,
-                    turn=self.turn,
-                    hand=self.player.hand,
-                    discarded=self.discarded,
-                    bet_percent=self.player_bet_percent,
-                    remaining_cash=self.remaining_cash,
-                ),
-                reward=reward,
-                terminated=game_terminated,
-            )
 
         return ActionOutcome(
             new_state=GameState(
@@ -135,7 +122,7 @@ class BlackjackWrapper:
                 bet_percent=self.player_bet_percent,
                 remaining_cash=self.remaining_cash,
             ),
-            reward=game_reward,
+            reward=reward,
             terminated=game_terminated,
         )
 
