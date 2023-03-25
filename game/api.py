@@ -4,7 +4,7 @@ import math
 from game.models.model import ActionOutcome, GameState
 from game.models.player import Player
 from game.models.deck import Deck
-from game.models.constant import Card, PlayerType, Action
+from game.models.constant import Card, PlayerType
 
 
 class BlackjackWrapper:
@@ -17,7 +17,6 @@ class BlackjackWrapper:
     def __init__(self, initial_cash: int = 100, deck_nums: int = 4, min_bet: int = 10):
         """
         Initialise the game.
-        Will draw 2 cards for each player and dealer.
         """
         self.initial_cash: int = initial_cash
         self.max_attained_cash: int = initial_cash
@@ -136,7 +135,7 @@ class BlackjackWrapper:
                 bet_percent=self.player_bet_percent,
                 remaining_cash=self.remaining_cash,
             ),
-            reward=0,
+            reward=game_reward,
             terminated=game_terminated,
         )
 

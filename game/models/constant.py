@@ -18,12 +18,6 @@ class Card(IntEnum):
     queen = 12
     king = 13
 
-
-class Action(IntEnum):
-    hit = 1
-    stay = 2
-
-
 class PlayerType(IntEnum):
     player = 1
     dealer = 2
