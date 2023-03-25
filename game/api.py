@@ -4,7 +4,7 @@ import math
 from game.models.model import ActionOutcome, GameState
 from game.models.player import Player
 from game.models.deck import Deck
-from game.models.constant import Card, PlayerType, Action
+from game.models.constant import Card, PlayerType
 
 
 class BlackjackWrapper:

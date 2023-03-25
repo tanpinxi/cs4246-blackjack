@@ -13,12 +13,6 @@ class Player:
         self.player_type = player_type
         self.hand: Counter[Card] = Counter()
 
-    def get_action(self) -> Action:
-        if self.get_hand_value() < 17:
-            return Action.hit
-        else:
-            return Action.stay
-
     def get_hand_value(self) -> int:
         def get_value_with_aces(hand):
             # This method deals with hands that have an ace.
