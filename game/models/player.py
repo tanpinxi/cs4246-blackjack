@@ -1,7 +1,7 @@
 from typing import List, Union
 from collections import Counter
 
-from game.models.constant import Card, Action, PlayerType
+from game.models.constant import Card, PlayerType
 
 
 class Player:

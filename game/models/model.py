@@ -22,7 +22,7 @@ class GameState(BaseModel):
         # number of cards in hand + number of cards discarded + bet percent + remaining cash
         return len(Card) * 2 + 2
 
-    def flatten(self) -> np.ndarray:
+    def flatten(self, include_discarded: bool = True) -> np.ndarray:
         """
         Flattens the response into a 1D numpy array. Used as input for backend ML training.
         """
@@ -31,14 +31,16 @@ class GameState(BaseModel):
             output.append(self.hand[card] / self.deck_nums if card in self.hand else 0)
         for card in Card:
             output.append(
-                self.discarded[card] / self.deck_nums if card in self.discarded else 0
+                self.discarded[card] / self.deck_nums
+                if include_discarded and card in self.discarded
+                else 0
             )
         output.append(self.bet_percent or 0)
         output.append(self.remaining_cash / self.initial_cash)
         return np.array(output)
 
-    def torch_flatten(self, device) -> torch.Tensor:
-        return torch.Tensor(self.flatten()).unsqueeze(0).to(device)
+    def torch_flatten(self, device, include_discarded: bool = True) -> torch.Tensor:
+        return torch.Tensor(self.flatten(include_discarded)).unsqueeze(0).to(device)
 
 
 class ActionOutcome(BaseModel):
