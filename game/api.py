@@ -1,5 +1,4 @@
 from collections import Counter
-import math
 
 from game.models.model import ActionOutcome, GameState
 from game.models.player import Player

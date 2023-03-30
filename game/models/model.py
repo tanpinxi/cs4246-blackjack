@@ -18,11 +18,11 @@ class GameState(BaseModel):
     remaining_cash: int  # total cash I have left
 
     @staticmethod
-    def get_state_size() -> int:
+    def get_state_size(add_steps: bool = False) -> int:
         # number of cards in hand + number of cards discarded + bet percent + remaining cash
-        return len(Card) * 2 + 2
+        return len(Card) * 2 + 2 + (1 if add_steps else 0)
 
-    def flatten(self, include_discarded: bool = True) -> np.ndarray:
+    def flatten(self, include_discarded: bool = True, step_num: Optional[float] = None) -> np.ndarray:
         """
         Flattens the response into a 1D numpy array. Used as input for backend ML training.
         """
@@ -37,10 +37,12 @@ class GameState(BaseModel):
             )
         output.append(self.bet_percent or 0)
         output.append(self.remaining_cash / self.initial_cash)
+        if step_num is not None:
+            output.append(step_num)
         return np.array(output)
 
-    def torch_flatten(self, device, include_discarded: bool = True) -> torch.Tensor:
-        return torch.Tensor(self.flatten(include_discarded)).unsqueeze(0).to(device)
+    def torch_flatten(self, device, include_discarded: bool = True, step_num: Optional[float] = None) -> torch.Tensor:
+        return torch.Tensor(self.flatten(include_discarded=include_discarded, step_num=step_num)).unsqueeze(0).to(device)
 
 
 class ActionOutcome(BaseModel):
